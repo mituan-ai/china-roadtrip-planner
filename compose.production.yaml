@@ -1,0 +1,15 @@
+services:
+  app:
+    image: ${IMAGE:-ghcr.io/mituan-ai/china-roadtrip-planner:latest}
+    pull_policy: always
+    ports: !reset []
+    networks:
+      default:
+      caddy:
+        aliases:
+          - china-roadtrip-planner
+
+networks:
+  caddy:
+    external: true
+    name: ${CADDY_NETWORK}

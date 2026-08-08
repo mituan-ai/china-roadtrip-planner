@@ -1,0 +1,21 @@
+name: 路线数据建议
+description: 提交路线纠错或新路线线索
+title: "[路线] "
+body:
+  - type: input
+    attributes:
+      label: 路线名称与完整地区
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 节点顺序
+      description: 请区分游览节点和仅用于约束道路的导航锚点。
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 可靠来源
+      description: 优先地方交通、政府或文旅官方资料；社交平台仅作为线索。
+    validations:
+      required: true

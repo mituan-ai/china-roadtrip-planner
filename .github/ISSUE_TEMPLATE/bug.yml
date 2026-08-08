@@ -1,0 +1,22 @@
+name: 问题反馈
+description: 报告可以稳定复现的功能或路线问题
+title: "[Bug] "
+body:
+  - type: textarea
+    attributes:
+      label: 问题
+      description: 实际发生了什么？
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 复现步骤
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: 浏览器与设备
+  - type: textarea
+    attributes:
+      label: 补充信息
+      description: 可附截图；不要提交酒店、家庭地址或高德Key。

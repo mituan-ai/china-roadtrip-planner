@@ -1,0 +1,21 @@
+name: china-roadtrip-planner
+
+services:
+  app:
+    build: .
+    image: ${IMAGE:-china-roadtrip-planner:local}
+    restart: unless-stopped
+    env_file: .env
+    init: true
+    expose:
+      - "3000"
+    ports:
+      - "127.0.0.1:${HOST_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/v1/health').then((response) => { if (!response.ok) process.exit(1) }).catch(() => process.exit(1))"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    security_opt:
+      - no-new-privileges:true
