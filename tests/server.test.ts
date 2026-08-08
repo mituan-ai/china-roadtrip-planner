@@ -64,13 +64,21 @@ describe('API', () => {
     expect(response.json().places[0]).toMatchObject({ name: '汉庭酒店', region: '安徽省宣城市泾县', kind: 'hotel', adcode: '341823' })
   })
 
-  it('strictly limits place search when a region is supplied', async () => {
-    const fetchMock = vi.fn(async (_input: string | URL | Request) => new Response(JSON.stringify({ status: '1', pois: [] }), { status: 200 }))
+  it('strictly limits place search when a full region is supplied', async () => {
+    const fetchMock = vi.fn(async (_input: string | URL | Request) => new Response(JSON.stringify({
+      status: '1',
+      pois: [
+        { id: 'B001', name: '西湖', location: '120.1,30.2', pname: '浙江省', cityname: '杭州市', adname: '西湖区', adcode: '330106' },
+        { id: 'B002', name: '西湖公园', location: '119.3,26.1', pname: '福建省', cityname: '福州市', adname: '鼓楼区', adcode: '350102' },
+      ],
+    }), { status: 200 }))
     const app = await testServer(fetchMock as unknown as typeof fetch)
-    await app.inject({ method: 'GET', url: '/api/v1/places?q=古镇&city=湖州&kind=place' })
+    const response = await app.inject({ method: 'GET', url: '/api/v1/places?q=西湖&city=浙江省杭州市西湖区&kind=place' })
     const url = new URL(String(fetchMock.mock.calls[0]![0]))
-    expect(url.searchParams.get('city')).toBe('湖州')
+    expect(url.searchParams.get('city')).toBe('西湖区')
     expect(url.searchParams.get('citylimit')).toBe('true')
+    expect(response.json().places).toHaveLength(1)
+    expect(response.json().places[0]).toMatchObject({ name: '西湖', region: '浙江省杭州市西湖区' })
   })
 
   it('splits a long route into exact adjacent legs', async () => {

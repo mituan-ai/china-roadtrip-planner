@@ -41,6 +41,18 @@ function poiRegion(poi: Record<string, unknown>): string {
   return [...new Set(parts)].join('')
 }
 
+function parseRegionScope(region: string | undefined): { amapCity?: string, parts: string[] } {
+  if (!region) return { parts: [] }
+  const parts = region.match(/[^\s,，/\u7701\u5e02\u533a\u53bf\u5dde\u76df\u65d7]+(?:\u7279\u522b\u884c\u653f\u533a|\u81ea\u6cbb\u533a|\u81ea\u6cbb\u5dde|\u81ea\u6cbb\u53bf|\u7701|\u5e02|\u533a|\u53bf|\u76df|\u65d7)/g) || []
+  return { amapCity: parts.at(-1) || region, parts }
+}
+
+function poiMatchesRegion(poi: unknown, parts: string[]): boolean {
+  if (!parts.length) return true
+  const region = poiRegion(poi as Record<string, unknown>)
+  return parts.every((part) => region.includes(part))
+}
+
 function normalizePoi(value: unknown, kind: 'hotel' | 'place') {
   const poi = value as Record<string, unknown>
   if (typeof poi.location !== 'string' || typeof poi.name !== 'string') return null
@@ -88,8 +100,9 @@ export async function createServer(options: ServerOptions): Promise<FastifyInsta
 
   app.get('/api/v1/places', { config: { rateLimit: { max: options.placesRateLimit ?? 30, timeWindow: '1 minute' } } }, async (request) => {
     const input = placeQuerySchema.parse(request.query)
-    const pois = await amap.searchPlaces(input.q, input.city, input.kind) as unknown[]
-    return { places: pois.map((poi) => normalizePoi(poi, input.kind)).filter(Boolean) }
+    const region = parseRegionScope(input.city)
+    const pois = await amap.searchPlaces(input.q, region.amapCity, input.kind) as unknown[]
+    return { places: pois.filter((poi) => poiMatchesRegion(poi, region.parts)).map((poi) => normalizePoi(poi, input.kind)).filter(Boolean) }
   })
 
   app.get('/api/v1/weather', { config: { rateLimit: { max: options.weatherRateLimit ?? 20, timeWindow: '1 minute' } } }, async (request) => {
